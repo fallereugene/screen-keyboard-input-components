@@ -1,0 +1,65 @@
+﻿.keyboard {
+
+    .row {
+        display: block;
+    }
+
+    .btn {
+        width: 55px;
+        height: 55px;
+        border-radius: 5px;
+        border: solid 2px #a5b3bf;
+        font-size: 20px;
+        color: #4b677f;
+        margin-top: 7px;
+        margin-left: 7px;
+        position: relative;
+        background: transparent;
+        text-align: center;
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+        &:active {
+            color: #fff;
+            background: #05a4e1;
+            border: none;
+            top: 2px;
+            left: 2px;
+        }
+
+        &[data-value='bksp'] {
+            border: solid 2px #eb4242;
+            text-indent: -9999px;
+            position: relative;
+
+            &:active {
+                background: transparent;
+            }
+
+            &::after {
+                content: '';
+                width: 36px;
+                height: 26px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                margin-top: -13px;
+                margin-left: -18px;
+                background-image: url('./images/delete.png');
+                background-repeat: no-repeat;
+                background-size: contain;
+            }
+        }
+
+        &[data-value='space'] {
+            width: 489px;
+            text-indent: -9999px;
+        }
+
+        &[data-value='123&'] {
+            font-size: 19px;
+        }
+    }
+}

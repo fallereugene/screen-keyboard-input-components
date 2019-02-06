@@ -1,0 +1,21 @@
+﻿.input-field {
+    border: solid 2px #a5b3bf;
+    border-radius: 5px;
+    height: 55px;
+    line-height: 51px;
+    padding: 0 15px;
+
+    span {
+        color: #4b677f;
+        font-size: 32px;
+        letter-spacing: 2px;
+
+        &.not-editable {
+            font-weight: bold;
+        }
+
+        &.ghost {
+            color: #f0f0f0;
+        }
+    }
+}
