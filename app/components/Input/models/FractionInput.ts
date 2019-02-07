@@ -91,8 +91,7 @@ export default class FractionInput<T> extends InputBase<InputOptions<IDefaultFra
             }
             return;
         }
-        // fraction part
-        // if at pointer position
+        // fraction part if at pointer position
         if (this._getPointerPosition() === (this.cursor.position - 1) && !this.characters[this._getPointerPosition()].isUserInput) {
             this.cursor.mode = this.cursorModes.insert;
             this.cursor.position -= 1;

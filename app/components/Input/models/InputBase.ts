@@ -1,6 +1,4 @@
-﻿import cursorModes from './cursorModes';
-
-export default abstract class InputBase<TParams extends IBaseParams> implements IInputBase {
+﻿export default abstract class InputBase<TParams extends IBaseParams> implements IInputBase {
 
     protected options: TParams;
     protected characters: ICharacter[];

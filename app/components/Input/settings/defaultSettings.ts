@@ -15,6 +15,9 @@ export interface IDefaultString {
 export interface IDefaultMask {
     format: string;
     isRequired: boolean;
+    isDate: boolean;
+    minDate: string;
+    maxDate: string;
     mask: IMask;
     mandatory: IMask;
     definitions: IMaskDefinitions;
@@ -71,6 +74,9 @@ const defaultSettings = {
     defaultsMask: {
         format: '',
         isRequired: false,
+        isDate: false,
+        minDate: '',
+        maxDate: '',
         mask: {
             start: '[',
             end: ']'

@@ -17,6 +17,7 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
     private _lastRequiredIndex: number = 0;
     private _isCursorInLastPosition: boolean = false;
     private _lastEditableIndex: number = 0;
+    private _isDate: boolean = false;
 
     constructor(options) {
         super(options);
@@ -32,13 +33,12 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
 
         let mask: IMaskedChar[] = [];
 
-        // Разобрать каждый символ маски
+        // parse each mask's character
         let isChangableGroup: boolean = false;
         let isMandatoryGroup: boolean = false;
 
         maskStr.split('').forEach((c: string): void => {
             switch (c) {
-                // Управляющие символы
                 case changableGroupSyntax.start:
                     isChangableGroup = true;
                     break;
@@ -51,8 +51,6 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
                 case mandatoryGroupSyntax.end:
                     isMandatoryGroup = false;
                     break;
-
-                // Неуправляющие символы
                 default:
                     let maskChar: IMaskedChar = this._parseMaskChar(c, formatCharDef, isChangableGroup, isMandatoryGroup, replacements);
                     mask.push(maskChar);
@@ -134,7 +132,7 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
         return startPosition;
     }
 
-    private _getIndex(type: string): number {
+    private _getLastIndex(type: string): number {
         let idx: number = 0;
         for (let i = this._mask.length - 1; i >= 0; i--) {
             let maskedChar: IMaskedChar = this._mask[i];
@@ -146,6 +144,48 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
             }
         }
         return idx;
+    }
+
+    private _getFirstEditableIndex(): number {
+        let result: number = -1;
+        for (let i: number = 0; i < this._mask.length; i++) {
+            if (this._mask[i].isEditable) {
+                result = i;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private _getLastActiveCharPosition(considerCursor: boolean = true): number {
+        let result: number = -1;
+        if (this.characters.length > 0) {
+            // find last edited symbol
+            for (let i: number = this.characters.length - 1; i >= 0; i--) {
+                if (this._mask[i].isEditable && this.characters[i].isUserInput) {
+                    result = i;
+                    break;
+                }
+            }
+
+            if (result === -1) {
+                // find first position before editable symbol if there are no edited symbols
+                result = this._getFirstEditableIndex() - 1;
+            }
+
+            let notEditableTail: boolean = this._mask.slice(result + 1, this._mask.length)
+                .every((maskChar: IMaskedChar) => !maskChar.isEditable);
+
+            if (notEditableTail) {
+                result = this._mask.length - 1;
+            }
+        }
+
+        if (considerCursor) {
+            result = Math.max(result, this.cursor.position);
+        }
+
+        return result;
     }
 
     private _ensureMaskShown(): void {
@@ -161,11 +201,64 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
     }
 
     private _ensureUserInput(): void {
-        this.characters.slice(0, this.cursor.position).map((c: ICharacter) => c.isUserInput = true);
+        let lastInputChar: number = this._getLastActiveCharPosition(false);
+
+        // All symbols should be marked as userInput = true before last edited symbol
+        this.characters.slice(0, lastInputChar + 1).map((c: ICharacter) => {
+            c.isUserInput = true;
+        });
+
+        this.characters.slice(lastInputChar + 1, this.characters.length).map((c: ICharacter) => c.isUserInput = false);
     }
 
     private _isDigit(c: string): boolean {
         return /\d/.test(c);
+    }
+
+    private _getDaysQuantity(m: number, y: number): number {
+        switch (m) {
+            case 1:
+                return (y % 4 === 0 && y % 100) || y % 400 === 0 ? 29 : 28;
+            case 8:
+            case 3:
+            case 5:
+            case 10:
+                return 30;
+            default:
+                return 31;
+        }
+    }
+
+    private _validateDate(): boolean {
+        const value: string = this.getValue();
+        const { isRequired, minDate, maxDate } = this.options;
+
+        if (!isRequired && !value.length) {
+            return true;
+        }
+
+        if (this.characters[this.characters.length - 1].isUserInput) {
+            const [d, m, y] = value.split('/').map((v: string) => parseInt(v, 10));
+            const isValidDate = m >= 0 && m < 12 && d > 0 && d <= this._getDaysQuantity(m - 1, y);
+
+            if (!isValidDate) {
+                return false;
+            }
+
+            if (!minDate && !maxDate) {
+                return true;
+            }
+
+            const userDate = new Date(y, m - 1, d);
+            const userTime = userDate.getTime();
+            const minTime = new Date(minDate);
+            const maxTime = new Date(maxDate).getTime();
+            minTime.setHours(0, 0, 0, 0);
+
+            return userTime >= minTime.getTime() && userTime <= maxTime;
+        }
+
+        return false;
     }
 
     private _isLetter(c: string): boolean {
@@ -194,8 +287,8 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
             mode: this.cursorModes.insert
         };
 
-        this._lastEditableIndex = this._getIndex('editable');
-        this._lastRequiredIndex = this._getIndex('required');
+        this._lastEditableIndex = this._getLastIndex('editable');
+        this._lastRequiredIndex = this._getLastIndex('required');
 
         this._ensureMaskShown();
         this._ensureUserInput();
@@ -229,6 +322,10 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
         });
         this.characters.splice(this.cursor.position, 1, newChar);
         this._isCursorInLastPosition && (this._isCursorInLastPosition = false);
+
+        this._ensureMaskShown();
+        this._ensureUserInput();
+
         return true;
     }
 
@@ -269,6 +366,10 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
     }
 
     public checkValidation(): boolean {
+        if (this.options.isDate) {
+            return this._validateDate();
+        }
+
         let { isRequired } = this.options,
             nonRequiredMask: boolean = this._mask.every((item: IMaskedChar) => !item.isRequired);
 

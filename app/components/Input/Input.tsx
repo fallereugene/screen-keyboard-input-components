@@ -93,6 +93,7 @@ export default class Input extends React.Component<IProps, {}, {}> {
     render(): JSX.Element {
         const vmState = this._viewModel.getState();
         const toRender = this.drawCharacters(vmState);
+        console.log('vmState', vmState);
         return (
             <div
                 className='input-field'
