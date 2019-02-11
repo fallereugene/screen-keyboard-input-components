@@ -172,7 +172,7 @@ export default class FractionInput<T> extends InputBase<InputOptions<IDefaultFra
         }
 
         const newChar: ICharacter = this.createDefaultCharacter(character, {
-            displayValue: character
+            displayValue: this.options.isPwd ? this.options.pwdChar : character
         });
         const isIntegerPart: boolean = this.cursor.position < this._getPointerPosition();
 

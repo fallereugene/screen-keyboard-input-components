@@ -348,7 +348,7 @@ export default class MaskedInput<T> extends InputBase<InputOptions<IDefaultMask>
 
         const newChar: ICharacter = this.createDefaultCharacter(character, {
             isUserInput: true,
-            displayValue: character
+            displayValue: this.options.isPwd ? this.options.pwdChar : character
         });
 
         if (this._isCursorInLastPosition) {

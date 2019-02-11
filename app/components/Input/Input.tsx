@@ -19,6 +19,7 @@ interface IProps {
         emit(e: any): void;
     };
     options: IOptions;
+    className?: string;
 }
 
 interface IDefaultProps {}
@@ -108,7 +109,7 @@ export default class Input extends React.Component<IProps, {}, {}> implements II
         const toRender: string = this.drawCharacters(vmState);
         return (
             <div
-                className='input-field'
+                className={cx('input-field', this.props.className)}
                 tabIndex={0}
                 onKeyDown={this.onKey.bind(this)}
                 dangerouslySetInnerHTML={{ __html: toRender }}

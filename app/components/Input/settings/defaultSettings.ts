@@ -2,6 +2,9 @@
     mode: string;
     value: string;
     isRequired: boolean;
+    isPwd: boolean;
+    pwdChar: string;
+    className: string;
 }
 
 export interface IDefaultNumber { }
@@ -61,9 +64,12 @@ export interface IDefaultFraction {
 
 const defaultSettings = {
     defaults: {
-        mode: 'String',
+        mode: 'string',
         value: '',
-        isRequired: false
+        isRequired: false,
+        isPwd: false,
+        pwdChar: '*',
+        className: ''
     },
     defaultsNumber: {},
     defaultsString: {

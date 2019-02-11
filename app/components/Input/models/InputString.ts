@@ -29,7 +29,9 @@ export default class InputString<T> extends InputBase<InputOptions<IDefaultStrin
 
     public pasteChar(character: string): boolean {
         if (this.options.maxSymbolString && this.options.maxSymbolString > this.characters.length) {
-            this.characters.splice(this.cursor.position, 0, this.createDefaultCharacter(character));
+            this.characters.splice(this.cursor.position, 0, this.createDefaultCharacter(character, {
+                displayValue: this.options.isPwd ? this.options.pwdChar : character
+            }));
             this.cursor.position += 1;
             return true;
         }
